@@ -97,7 +97,7 @@
 import React from 'react';
 import { useTranslations } from '../utils/i18n';
 import { IconExternalLink } from '@tabler/icons-react';
-
+import { IconMinus } from '@tabler/icons-react';
 
 export default function GenericAdminTable({ columns, data }) {
   const { t } = useTranslations();
