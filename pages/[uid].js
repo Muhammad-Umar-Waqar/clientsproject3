@@ -370,7 +370,7 @@
 
 
 
-// CODE2
+// CODE2  - WORKING WELL BUT WITHOUT UIDS
 
 
 
@@ -682,8 +682,6 @@
 // Code3
 
 
-
-
 import { useRouter } from 'next/router';
 import Head from 'next/head';
 import { useTranslations } from '../utils/i18n';
@@ -732,20 +730,29 @@ export default function Page({ post, type, research }) {
     );
   }
 
-  // Regular page fallback
+  // Regular page content
   return (
     <>
       <Head>
         <title>{post.data.title?.[0]?.text || 'Page'}</title>
         <meta name="description" content={post.data.description || ''} />
       </Head>
+
       <article className="max-w-4xl mx-auto px-4 py-8">
-        <h1 className="text-4xl font-bold mb-6">{post.data.title?.[0]?.text || 'Page'}</h1>
+        <h1 className="text-4xl font-bold mb-6">
+          {post.data.title?.[0]?.text || 'Page'}
+        </h1>
+
         {post.data.featured_image && (
           <div className="mb-8">
-            <img src={post.data.featured_image.url} alt={post.data.featured_image.alt || ''} className="w-full h-auto rounded-lg" />
+            <img
+              src={post.data.featured_image.url}
+              alt={post.data.featured_image.alt || ''}
+              className="w-full h-auto rounded-lg"
+            />
           </div>
         )}
+
         <div className="prose max-w-none">
           {Array.isArray(post.data.content) && post.data.content.map((block, idx) => {
             const text = block?.[0]?.text || block?.text || '';
@@ -756,8 +763,11 @@ export default function Page({ post, type, research }) {
             return null;
           })}
         </div>
+
         <div className="mt-8 text-sm text-gray-500">
-          <time dateTime={post.first_publication_date}>{new Date(post.first_publication_date).toLocaleDateString(locale)}</time>
+          <time dateTime={post.first_publication_date}>
+            {new Date(post.first_publication_date).toLocaleDateString(locale)}
+          </time>
         </div>
       </article>
     </>
@@ -785,59 +795,90 @@ export async function getStaticPaths({ locales }) {
 export async function getStaticProps({ params, locale }) {
   const databaseLocales = { en: 'en-us', es: 'es-es' };
   const uid = params.uid;
-  const dbLocale = databaseLocales[locale] || locale;
   const cleanUid = uid.replace(/^research\//, '');
   const isResearchPath = uid.startsWith('research/');
+  const dbLocale = databaseLocales[locale] || locale;
+  const fallbackLocale = dbLocale === 'es-es' ? 'en-us' : 'es-es';
 
-  // Helper to fetch with fallback locale
-  async function fetchWithFallback(type, uid, primaryLang, fallbackLang) {
-    let doc = await getDocumentByUID(type, uid, primaryLang);
-    if (!doc) {
-      doc = await getDocumentByUID(type, uid, fallbackLang);
-    }
+  async function fetchWithFallback(type, uid, primary, fallback) {
+    let doc = await getDocumentByUID(type, uid, primary);
+    if (!doc) doc = await getDocumentByUID(type, uid, fallback);
     return doc;
   }
 
   try {
-    // Determine fallback language for missing translations
-    const fallbackLocale = dbLocale.includes('es') ? 'en-us' : 'es-es';
+    // 1) Try research in primary locale
+    let post = await getDocumentByUID('research', cleanUid, dbLocale);
 
-    // Attempt to fetch research first
-    let post = await fetchWithFallback('research', cleanUid, dbLocale, fallbackLocale);
-    let research = null;
+    // 2) Redirect to translated slug if wrong locale
+    if (post && post.lang !== dbLocale && post.alternate_languages?.length) {
+      const alt = post.alternate_languages.find(a => a.lang === dbLocale);
+      if (alt) {
+        const dest = isResearchPath ? `/${locale}/research/${alt.uid}` : `/${locale}/${alt.uid}`;
+        return { redirect: { destination: dest, permanent: false } };
+      }
+    }
 
+    // 3) Fallback research in other locale
+    if (!post) {
+      post = await getDocumentByUID('research', cleanUid, fallbackLocale);
+      if (post && post.lang !== dbLocale && post.alternate_languages?.length) {
+        const alt = post.alternate_languages.find(a => a.lang === dbLocale);
+        if (alt) {
+          const dest = isResearchPath ? `/${locale}/research/${alt.uid}` : `/${locale}/${alt.uid}`;
+          return { redirect: { destination: dest, permanent: false } };
+        }
+      }
+    }
+
+    // If we have a research post, hydrate outcomes/interventions
     if (post) {
-      // Build UID lists safely
       const sections = post.data.body || [];
-      const allOutcomeUids = sections.flatMap(sec => (sec.items || []).map(i => i.outcomes1?.uid).filter(Boolean));
-      const allInterventionUids = sections.flatMap(sec => {
-        const primaries = Array.isArray(sec.primary) ? sec.primary : sec.primary ? [sec.primary] : [];
-        return primaries.map(p => p.intervention?.uid).filter(Boolean);
+      const outcomeUids = sections.flatMap(sec => (sec.items || []).map(i => i.outcomes1?.uid).filter(Boolean));
+      const interventionUids = sections.flatMap(sec => {
+        const prims = Array.isArray(sec.primary) ? sec.primary : sec.primary ? [sec.primary] : [];
+        return prims.map(p => p.intervention?.uid).filter(Boolean);
       });
+      const uniqueOutcomes = [...new Set(outcomeUids)];
+      const uniqueInterventions = [...new Set(interventionUids)];
 
-      const uniqueOutcomeUids = [...new Set(allOutcomeUids)];
-      const uniqueInterventionUids = [...new Set(allInterventionUids)];
-
-      // Fetch related docs, allowing missing ones
-      const outcomeDocs = await Promise.all(uniqueOutcomeUids.map(uid => fetchWithFallback('outcomes', uid, dbLocale, fallbackLocale)));
-      const interventionDocs = await Promise.all(uniqueInterventionUids.map(uid => fetchWithFallback('interventions', uid, dbLocale, fallbackLocale)));
+      const outcomeDocs = await Promise.all(uniqueOutcomes.map(u => fetchWithFallback('outcomes', u, dbLocale, fallbackLocale)));
+      const interventionDocs = await Promise.all(uniqueInterventions.map(u => fetchWithFallback('interventions', u, dbLocale, fallbackLocale)));
 
       const outcomeMap = outcomeDocs.reduce((m, d) => { if (d?.uid) m[d.uid] = d; return m; }, {});
       const interventionMap = interventionDocs.reduce((m, d) => { if (d?.uid) m[d.uid] = d; return m; }, {});
 
-      research = mapResearchData(post, outcomeMap, interventionMap);
-
-      // If requested locale missing, no redirect: we serve fallback content
+      const research = mapResearchData(post, outcomeMap, interventionMap);
       return { props: { post, type: 'research', research }, revalidate: 60 };
     }
 
-    // Else try regular page
-    const poste = await fetchWithFallback('page', cleanUid, dbLocale, fallbackLocale);
-    if (!poste) return { notFound: true };
+    // Otherwise, treat as a regular page
+    // Try primary locale
+    let pageDoc = await getDocumentByUID('page', cleanUid, dbLocale);
+    // Redirect if alternate exists
+    if (pageDoc && pageDoc.lang !== dbLocale && pageDoc.alternate_languages?.length) {
+      const alt = pageDoc.alternate_languages.find(a => a.lang === dbLocale);
+      if (alt) {
+        const dest = `/${locale}/${alt.uid}`;
+        return { redirect: { destination: dest, permanent: false } };
+      }
+    }
+    // Fallback page
+    if (!pageDoc) {
+      pageDoc = await getDocumentByUID('page', cleanUid, fallbackLocale);
+      if (pageDoc && pageDoc.lang !== dbLocale && pageDoc.alternate_languages?.length) {
+        const alt = pageDoc.alternate_languages.find(a => a.lang === dbLocale);
+        if (alt) {
+          const dest = `/${locale}/${alt.uid}`;
+          return { redirect: { destination: dest, permanent: false } };
+        }
+      }
+    }
 
-    return { props: { poste, type: 'page' }, revalidate: 60 };
+    if (!pageDoc) return { notFound: true };
+    return { props: { post: pageDoc, type: 'page' }, revalidate: 60 };
   } catch (err) {
-    console.error('Error in getStaticProps:', err);
+    console.error('getStaticProps error:', err);
     return { notFound: true };
   }
 }
