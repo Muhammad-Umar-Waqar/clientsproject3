@@ -96,6 +96,8 @@
 // components/GenericAdminTable.jsx
 import React from 'react';
 import { useTranslations } from '../utils/i18n';
+import { IconExternalLink } from '@tabler/icons-react';
+
 
 export default function GenericAdminTable({ columns, data }) {
   const { t } = useTranslations();
@@ -139,13 +141,25 @@ export default function GenericAdminTable({ columns, data }) {
                   {showGroupCells && (
                     <>
                       {/* Title cell, spans groupCount rows */}
-                      <td className="px-6 py-4 font-medium" rowSpan={groupCount}>
+                      <td className="px-6 py-4" rowSpan={groupCount}>
                         {row.title}
                       </td>
                       {/* DOI cell, also spans same rows */}
-                      <td className="px-6 py-4" rowSpan={groupCount}>
-                        {row.doi}
+                      {/* <td className="px-6 py-4 underline" rowSpan={groupCount}>
+                        <div className="flex items-center ">
+                          <a href={`https://doi.org/${row.doi}`}>{row.doi} </a><IconExternalLink size={19} className='ml-[0.1rem]' />
+                        </div>
+                      </td> */}
+                      <td rowSpan={groupCount} className="px-6 py-4">
+                        <a
+                          href={`https://doi.org/${row.doi}`}
+                          className="inline-flex items-center underline"
+                        >
+                          {row.doi}
+                          <IconExternalLink size={19} className="ml-1" />
+                        </a>
                       </td>
+
                     </>
                   )}
 
