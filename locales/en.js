@@ -264,7 +264,8 @@ export const enTranslations = {
       outcome: "Outcome",
       effectiveness: "Effectiveness",
       studies: "Studies",
-      bias: "Bias"
+      bias: "Bias",
+     
     },
     filters: {
       allEffectiveness: "All Effectiveness",
@@ -890,7 +891,8 @@ export const enTranslations = {
     tableHeaders: {
       doi: "DOI",
       interventionText: "Intervention Text",
-      outcomeText: "Outcome Text"
+      outcomeText: "Outcome Text",
+       title: "Title"
     }
   },
   adminTable: {

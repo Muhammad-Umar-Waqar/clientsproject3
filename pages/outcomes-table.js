@@ -21,12 +21,14 @@ export default function AdminOutcomes({ data }) {
   const filtered = useMemo(() => {
     if (!throttledSearch) return data;
     const term = throttledSearch.toLowerCase();
-    return data.filter(
-      row =>
-        row.outcome.toLowerCase().includes(term) ||
-        row.outcome_text.toLowerCase().includes(term)
+    return data.filter(row =>
+      row.title.toLowerCase().includes(term) ||
+      row.outcome.toLowerCase().includes(term) ||
+      row.outcome_text.toLowerCase().includes(term)
     );
   }, [data, throttledSearch]);
+
+  
 
   // pagination
   const ROWS_PER_PAGE = 10;
@@ -37,10 +39,13 @@ export default function AdminOutcomes({ data }) {
   );
 
   const columns = [
+    { key: 'title',        label: 'admin.tableHeaders.title' },
     { key: 'outcome',      label: 'outcomes.tableHeaders.outcome'     },
     { key: 'outcome_text', label: 'admin.tableHeaders.outcomeText' },
     { key: 'doi',          label: 'admin.tableHeaders.doi'         },
   ];
+
+  
 
   return (
     <>

@@ -156,7 +156,8 @@ export default function AdminInterventions({ data }) {
     return data.filter(
       row =>
         row.intervention.toLowerCase().includes(term) ||
-        row.intervention_text.toLowerCase().includes(term)
+        row.intervention_text.toLowerCase().includes(term) 
+        || row. title.toLowerCase().includes(term)
     );
   }, [data, throttledSearch]);
 
@@ -169,6 +170,7 @@ export default function AdminInterventions({ data }) {
   );
 
   const columns = [
+    { key: 'title',        label: 'admin.tableHeaders.title' },
     { key: 'intervention',     label: 'interventions.tableHeaders.intervention'     },
     { key: 'intervention_text', label: 'admin.tableHeaders.interventionText'        },
     { key: 'doi',              label: 'admin.tableHeaders.doi'                    },

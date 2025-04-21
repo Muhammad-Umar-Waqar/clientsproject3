@@ -891,7 +891,8 @@ export const esTranslations = {
     tableHeaders: {
       doi: "DOI",
       interventionText: "Texto de la intervención",
-      outcomeText: "Texto del resultado"
+      outcomeText: "Texto del resultado",
+       title: "Titulo"
     }
   },
   adminTable: {

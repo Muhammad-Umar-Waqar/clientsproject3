@@ -622,6 +622,7 @@ export async function getInterventionsTable(lang = 'en-us') {
     const table = [];
     researchDocs.forEach(doc => {
       const doi = doc.data?.doi?.[0]?.text || '';
+      const researchTitle = doc.data?.title?.[0]?.text || 'Untitled';
       const slices = doc.data?.body?.filter(s => s.slice_type === 'interventions') || [];
       slices.forEach(slice => {
         // use UID‐lookup title or fallback to inline text
@@ -631,7 +632,7 @@ export async function getInterventionsTable(lang = 'en-us') {
           : "-";
         const intervention = title;
         const intervention_text = slice.primary?.intervention_text?.[0]?.text || '';
-        table.push({ intervention, intervention_text, doi });
+        table.push({ intervention, intervention_text, doi, title: researchTitle });
       });
     });
   
@@ -668,6 +669,7 @@ export async function getInterventionsTable(lang = 'en-us') {
     const table = [];
     researchDocs.forEach(doc => {
       const doi = doc.data?.doi?.[0]?.text || '';
+      const researchTitle = doc.data?.title?.[0]?.text || 'Untitled';
       const slices = doc.data?.body?.filter(s => s.slice_type === 'interventions') || [];
       slices.forEach(slice => {
         slice.items.forEach(item => {
@@ -678,7 +680,7 @@ export async function getInterventionsTable(lang = 'en-us') {
             : "-";
           const outcome = title || '';
           const outcome_text = item.outcome_text?.[0]?.text || '';
-          table.push({ outcome, outcome_text, doi });
+          table.push({ outcome, outcome_text, doi, title: researchTitle });
         //   console.log("Outcome<>", outcome, "outcome_text<>", outcome_text, "doi<>", doi);
         });
       });

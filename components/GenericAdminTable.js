@@ -119,33 +119,36 @@ export default function GenericAdminTable({ columns, data }) {
           </tr>
         </thead>
         <tbody>
-          {data?.length > 0 ? (
-            data.map((row, rowIndex) => (
-              <tr
-                key={rowIndex}
-                className="border-b border-input hover:bg-accent/50"
-              >
-                {columns.map(col => (
-                  <td key={col.key} className="px-6 py-4">
-                    {col.render
-                      ? col.render(row)
-                      : // default: just spit out the field
-                        row[col.key]}
+          {data.map((row, i, arr) => {
+            // only show title on the first occurrence of each group
+            const firstIndex = arr.findIndex(r => r.title === row.title);
+            const sameCount = arr.filter(r => r.title === row.title).length;
+            const showTitle = i === firstIndex;
+
+            return (
+              <tr key={i} className="border-b border-input hover:bg-accent/50">
+                {showTitle && (
+                  <td
+                    className="px-6 py-4 font-medium"
+                    rowSpan={sameCount}
+                  >
+                    {row.title}
                   </td>
-                ))}
+                )}
+                {columns.map(col => {
+                  // skip the title column in columns array
+                  if (col.key === 'title') return null;
+                  return (
+                    <td key={col.key} className="px-6 py-4">
+                      {col.render ? col.render(row) : row[col.key]}
+                    </td>
+                  );
+                })}
               </tr>
-            ))
-          ) : (
-            <tr>
-              <td
-                colSpan={columns.length}
-                className="px-6 py-8 text-center text-muted-foreground"
-              >
-                {t('adminTable.noData')}
-              </td>
-            </tr>
-          )}
+            );
+          })}
         </tbody>
+
       </table>
     </div>
   );
