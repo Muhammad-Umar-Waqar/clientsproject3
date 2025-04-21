@@ -131,7 +131,7 @@
 
 
 // pages/admin/interventions.jsx
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 
@@ -148,6 +148,19 @@ export default function AdminInterventions({ data }) {
   // search state + throttle
   const [search, setSearch] = useState('');
   const throttledSearch = useThrottle(search, 300);
+
+
+   // Whenever the search term changes, strip out "page"
+   useEffect(() => {
+    if (throttledSearch) {
+      // 1) Build a new URL object with NO query params
+      const newPath = { pathname: router.pathname };
+      
+      // 2) Replace (or push) with shallow routing
+      router.replace(newPath, undefined, { shallow: true });
+    }
+  }, [throttledSearch, router]);
+
 
   // filter by intervention or text
   const filtered = useMemo(() => {
@@ -171,9 +184,9 @@ export default function AdminInterventions({ data }) {
 
   const columns = [
     { key: 'title',        label: 'admin.tableHeaders.title' },
+    { key: 'doi',              label: 'admin.tableHeaders.doi'                    },
     { key: 'intervention',     label: 'interventions.tableHeaders.intervention'     },
     { key: 'intervention_text', label: 'admin.tableHeaders.interventionText'        },
-    { key: 'doi',              label: 'admin.tableHeaders.doi'                    },
   ];
 
   return (

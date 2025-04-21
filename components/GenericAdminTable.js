@@ -93,10 +93,7 @@
 
 
 
-
-
-
-// components/AdminTable.jsx
+// components/GenericAdminTable.jsx
 import React from 'react';
 import { useTranslations } from '../utils/i18n';
 
@@ -118,37 +115,54 @@ export default function GenericAdminTable({ columns, data }) {
             ))}
           </tr>
         </thead>
+
         <tbody>
-          {data.map((row, i, arr) => {
-            // only show title on the first occurrence of each group
-            const firstIndex = arr.findIndex(r => r.title === row.title);
-            const sameCount = arr.filter(r => r.title === row.title).length;
-            const showTitle = i === firstIndex;
+          {data.length === 0 ? (
+            <tr>
+              <td
+                colSpan={columns.length}
+                className="px-6 py-8 text-center text-muted-foreground"
+              >
+                {t('adminTable.noData')}
+              </td>
+            </tr>
+          ) : (
+            data.map((row, i, arr) => {
+              // Build a group key from title + doi
+              const groupKey = `${row.title}|||${row.doi}`;
+              const firstIndex = arr.findIndex(r => `${r.title}|||${r.doi}` === groupKey);
+              const groupCount = arr.filter(r => `${r.title}|||${r.doi}` === groupKey).length;
+              const showGroupCells = i === firstIndex;
 
-            return (
-              <tr key={i} className="border-b border-input hover:bg-accent/50">
-                {showTitle && (
-                  <td
-                    className="px-6 py-4 font-medium"
-                    rowSpan={sameCount}
-                  >
-                    {row.title}
-                  </td>
-                )}
-                {columns.map(col => {
-                  // skip the title column in columns array
-                  if (col.key === 'title') return null;
-                  return (
-                    <td key={col.key} className="px-6 py-4">
-                      {col.render ? col.render(row) : row[col.key]}
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
+              return (
+                <tr key={i} className="border-b border-input hover:bg-accent/50">
+                  {showGroupCells && (
+                    <>
+                      {/* Title cell, spans groupCount rows */}
+                      <td className="px-6 py-4 font-medium" rowSpan={groupCount}>
+                        {row.title}
+                      </td>
+                      {/* DOI cell, also spans same rows */}
+                      <td className="px-6 py-4" rowSpan={groupCount}>
+                        {row.doi}
+                      </td>
+                    </>
+                  )}
+
+                  {/* Render the rest of the columns (skip title & doi) */}
+                  {columns.map(col => {
+                    if (col.key === 'title' || col.key === 'doi') return null;
+                    return (
+                      <td key={col.key} className="px-6 py-4">
+                        {col.render ? col.render(row) : row[col.key]}
+                      </td>
+                    );
+                  })}
+                </tr>
+              );
+            })
+          )}
         </tbody>
-
       </table>
     </div>
   );
