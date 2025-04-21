@@ -449,7 +449,7 @@ const ResearchTemplate = ({
               ))}
             </section>
             
-            {/* <p className="mt-4 text-sm text-gray-500">
+            <p className="mt-4 text-sm text-gray-500">
     © {new Date().getFullYear()} deDiabetes. Licensed under <a 
       href="https://creativecommons.org/publicdomain/zero/1.0/" 
       className="text-primary hover:underline"
@@ -458,7 +458,7 @@ const ResearchTemplate = ({
     >
       {copyright_license || ""}
     </a>
-    </p> */}
+    </p>
           </section>
         )}
 
