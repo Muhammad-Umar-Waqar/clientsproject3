@@ -141,7 +141,7 @@ export default function ResearchPost() {
         studyCards={studyCards}
         xCards={xCards}
         youtubeCards={youtubeCards}
-        copyright_license={research.copyright_license}
+        copyright_license={research.copyright_license || ""}
       />
     </div>
   );

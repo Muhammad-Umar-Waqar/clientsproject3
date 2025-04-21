@@ -325,10 +325,6 @@ import { getAllDocuments, getDocumentByUID } from '../lib/mongodb';
 
 
 // Added the logic of Fetching UIDS
-
-
-
-
 export async function getInterventionsTable(lang = 'en-us') {
     // 1) Fetch all research docs
     const researchDocs = await getAllDocuments('research', lang);
@@ -595,11 +591,6 @@ export async function getInterventionsTable(lang = 'en-us') {
   
     return Array.from(outcomesMap.values());
   }
-
-
-
-
-
 
 // New
 
