@@ -629,7 +629,7 @@ export async function getInterventionsTable(lang = 'en-us') {
         const iUid = slice.primary?.intervention?.uid;
         const title = iUid
           ? interventionMap[iUid]?.data?.name?.[0]?.text
-          : "-";
+          : "N/A";
         const intervention = title;
         const intervention_text = slice.primary?.intervention_text?.[0]?.text || '';
         table.push({ intervention, intervention_text, doi, title: researchTitle });
@@ -677,7 +677,7 @@ export async function getInterventionsTable(lang = 'en-us') {
           const oUid = item.outcomes1?.uid;
           const title = oUid
             ? outcomeMap[oUid]?.data?.title?.[0]?.text
-            : "-";
+            : "N/A";
           const outcome = title || '';
           const outcome_text = item.outcome_text?.[0]?.text || '';
           table.push({ outcome, outcome_text, doi, title: researchTitle });

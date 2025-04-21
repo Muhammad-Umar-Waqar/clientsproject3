@@ -97,7 +97,7 @@
 import React from 'react';
 import { useTranslations } from '../utils/i18n';
 import { IconExternalLink } from '@tabler/icons-react';
-import { IconMinus } from '@tabler/icons-react';
+
 
 export default function GenericAdminTable({ columns, data }) {
   const { t } = useTranslations();
@@ -146,19 +146,23 @@ export default function GenericAdminTable({ columns, data }) {
                       </td>
                       {/* DOI cell, also spans same rows */}
                       {/* <td className="px-6 py-4 underline" rowSpan={groupCount}>
-                        <div className="flex items-center ">
-                          <a href={`https://doi.org/${row.doi}`}>{row.doi} </a><IconExternalLink size={19} className='ml-[0.1rem]' />
-                        </div>
+                      
+                          <a href={`https://doi.org/${row.doi}`}>{row.doi} </a>
+                     
                       </td> */}
-                      <td rowSpan={groupCount} className="px-6 py-4">
+                     <td rowSpan={groupCount} className="px-6 py-4">
                         <a
                           href={`https://doi.org/${row.doi}`}
-                          className="inline-flex items-center underline"
+                          className="underline break-words whitespace-normal"
+                          target="_blank"
+                          rel="noopener noreferrer"
                         >
                           {row.doi}
-                          <IconExternalLink size={19} className="ml-1" />
                         </a>
                       </td>
+
+
+
 
                     </>
                   )}
